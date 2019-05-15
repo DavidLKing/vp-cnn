@@ -165,6 +165,7 @@ def vp(text_field, label_field, foldid, bound_field=None, path=None, filename=No
     if alt_dict is not None:
         alt_list = [alt for key in alt_dict for alt in alt_dict[key]]
         #print(alt_list[:10])
+        # pdb.set_trace()
         if bound_field is not None:
             alt_list = [vpdataset.split_bounds(alt)[0] for alt in alt_list]
 
@@ -323,6 +324,7 @@ for xfold in range(args.xfolds):
                                                             min_freq=args.min_freq)
     # check_vocab(word_field)
     # print(label_field.vocab.itos)
+    # pdb.set_trace()
 
     
     args.class_num = 359
