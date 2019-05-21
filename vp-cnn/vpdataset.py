@@ -205,7 +205,8 @@ class VP(data.Dataset):
                 # print(dev_length)
                 for i in range(num_experts):
                     devs.append(cls(text_field, label_field, bound_field=bound_field, examples=traindev[dev_length*i:dev_length*(i+1)]))
-                    trains.append(cls(text_field, label_field, bound_field=bound_field, 
+                    for j in range(10):
+                        trains.append(cls(text_field, label_field, bound_field=bound_field,
                                       examples=traindev[:dev_length*i]+traindev[dev_length*(i+1):]+label_examples,
                                       idxs=traindev_idxs[:dev_length*i]+traindev_idxs[dev_length*(i+1):]+label_idxs, 
                                       alt_dict=alt_dict, prob_dict=prob_dict, alt_p=alt_p, random_state=42))
@@ -258,7 +259,8 @@ class VP(data.Dataset):
                 # print(dev_length)
                 for i in range(num_experts):
                     devs.append(cls(text_field, label_field, bound_field=bound_field, examples=traindev[dev_length*i:dev_length*(i+1)]))
-                    trains.append(cls(text_field, label_field, bound_field=bound_field, 
+                    for j in range(10):
+                        trains.append(cls(text_field, label_field, bound_field=bound_field,
                                       examples=traindev[:dev_length*i]+traindev[dev_length*(i+1):]+label_examples,
                                       idxs=traindev_idxs[:dev_length*i]+traindev_idxs[dev_length*(i+1):]+label_idxs, 
                                       alt_dict=alt_dict, prob_dict=prob_dict, alt_p=alt_p, random_state=42))
