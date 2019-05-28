@@ -205,12 +205,14 @@ class VP(data.Dataset):
                 # print(dev_length)
                 for i in range(num_experts):
                     devs.append(cls(text_field, label_field, bound_field=bound_field, examples=traindev[dev_length*i:dev_length*(i+1)]))
-                    for j in range(10):
+                    tests = cls(text_field, label_field, bound_field=bound_field, examples=test_examples)
+                    for j in range(1):
                         trains.append(cls(text_field, label_field, bound_field=bound_field,
                                       examples=traindev[:dev_length*i]+traindev[dev_length*(i+1):]+label_examples,
-                                      idxs=traindev_idxs[:dev_length*i]+traindev_idxs[dev_length*(i+1):]+label_idxs, 
+                                      idxs=traindev_idxs[:dev_length*i]+traindev_idxs[dev_length*(i+1):]+label_idxs,
                                       alt_dict=alt_dict, prob_dict=prob_dict, alt_p=alt_p, random_state=42))
-                return (trains, devs, cls(text_field, label_field, bound_field=bound_field, examples=test))
+                # return (trains, devs, cls(text_field, label_field, bound_field=bound_field, examples=test))
+                return (trains, devs, tests)
 
             else:
                 dev_index = -1 * int(dev_ratio*len(examples))
@@ -259,7 +261,7 @@ class VP(data.Dataset):
                 # print(dev_length)
                 for i in range(num_experts):
                     devs.append(cls(text_field, label_field, bound_field=bound_field, examples=traindev[dev_length*i:dev_length*(i+1)]))
-                    for j in range(10):
+                    for j in range(1):
                         trains.append(cls(text_field, label_field, bound_field=bound_field,
                                       examples=traindev[:dev_length*i]+traindev[dev_length*(i+1):]+label_examples,
                                       idxs=traindev_idxs[:dev_length*i]+traindev_idxs[dev_length*(i+1):]+label_idxs, 
