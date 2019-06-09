@@ -67,9 +67,13 @@ def ensemble_train(trains, devs, models, args, two_ch=False, **kwargs):
     for i in range(len(trains)):
         print('ensemble training model {}'.format(i))
         model = models[i]
+        # print("loading model to cuda")
         if args.cuda:
             model.cuda()
+        # print("loaded model to cuda")
+        # print("training")
         acc, model = train(trains[i], devs[i], model, args, two_ch=two_ch, **kwargs)
+        print("model {} trained".format(i))
         models[i] = model
         acc_list.append(acc)
         if not os.path.isdir(args.save_dir): os.makedirs(args.save_dir)
@@ -161,11 +165,14 @@ def train(train_iter, dev_iter, model, args, two_ch=False, **kwargs):
     else:
         raise Exception("bad optimizer!")
 
+    # print("training with {}".format(args.optimizer))
+
     steps = 0
     model.train()
     best_acc = 0
     best_model = None
     for epoch in range(1, args.epochs+1):
+        # print("starting epoch {}".format(epoch))
         for batch in train_iter:
             feature, target = batch.text, batch.label
             feature.data.t_(), target.data.sub_(0)  # batch first, index align
@@ -174,9 +181,11 @@ def train(train_iter, dev_iter, model, args, two_ch=False, **kwargs):
                 bounds.data.t_()
             # print(feature)
             # print(train_iter.data().fields['text'].vocab.stoi)
+            # print("Loading feats and targs to cuda")
             if args.cuda:
                 feature, target = feature.cuda(), target.cuda()
                 if two_ch: bounds = bounds.cuda()
+            # print("cuda loading finished")
             assert feature.volatile is False and target.volatile is False
             # print(feature, target)
             optimizer.zero_grad()
@@ -184,21 +193,29 @@ def train(train_iter, dev_iter, model, args, two_ch=False, **kwargs):
                 logit = model(feature, bounds)
             else:
                 logit = model(feature)
+            # print("computing loss")
             loss = F.nll_loss(logit, target)
+            # print("back propping")
             loss.backward()
+            # print("optimizer stepping")
             optimizer.step()
 
+            # print("max norm constrain")
             # max norm constraint
             if args.max_norm > 0:
                 if not args.no_always_norm:
+                    # print("if not args.no_always_norm")
                     for row in model.fc1.weight.data:
                         norm = row.norm() + 1e-7
                         row.div_(norm).mul_(args.max_norm)
                 else:
+                    # print("if not args.no_always_norm else")
                     model.fc1.weight.data.renorm_(2, 0, args.max_norm)
 
             steps += 1
+            # print("starting steps")
             if steps % args.log_interval == 0:
+                # print("are we stuck in logs?")
                 corrects = (torch.max(logit, 1)[1].view(target.size()).data == target.data).sum()
                 accuracy = corrects/batch.batch_size * 100.0
                 sys.stdout.write(
@@ -209,6 +226,7 @@ def train(train_iter, dev_iter, model, args, two_ch=False, **kwargs):
                                                                              batch.batch_size))
             if steps % args.test_interval == 0:
                 if args.verbose:
+                    # print("are we stuck in verbose?")
                     corrects = (torch.max(logit, 1)[1].view(target.size()).data == target.data).sum()
                     accuracy = corrects/batch.batch_size * 100.0
                     print(
@@ -222,13 +240,16 @@ def train(train_iter, dev_iter, model, args, two_ch=False, **kwargs):
             #    save_prefix = os.path.join(args.save_dir, 'snapshot')
             #    save_path = '{}_steps{}.pt'.format(save_prefix, steps)
             #    torch.save(model.state_dict(), save_path)
+        # print("Evalling")
         acc = eval(dev_iter, model, args, two_ch=two_ch, **kwargs)
         if acc > best_acc:
             best_acc = acc
             best_model = copy.deepcopy(model)
         # print(model.embed.weight[100])
     model = best_model
+    # print("eval best model")
     acc = eval(dev_iter, model, args, two_ch=two_ch, **kwargs)
+    # print('return model')
     return acc, model
 
 def eval(data_iter, model, args, two_ch=False, **kwargs):

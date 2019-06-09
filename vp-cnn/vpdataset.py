@@ -45,9 +45,10 @@ class VP(data.Dataset):
             path = self.dirname if path is None else path
             filename = "wilkins_corrected.shuffled.62.txt" if filename is None else filename
             examples = []
+            # for round in range(10):
+            #     print("round", round)
             with open(os.path.join(path, filename)) as f:
                 lines = f.readlines()
-                #pdb.set_trace()
                 for line in lines:
                     try:
                         label, text = line.split("\t")
@@ -59,10 +60,11 @@ class VP(data.Dataset):
                     if self.two_ch:
                         ex.insert(1, bounds)
                     this_example = data.Example.fromlist(ex, fields)
+                    # pdb.set_trace()
                     examples += [this_example]
             #assume "target \t source", one instance per line
         # print(examples[0].text)
-        
+
         self.alt_p = alt_p
         self.alt_dict = alt_dict
         self.prob_dict = prob_dict
@@ -82,7 +84,12 @@ class VP(data.Dataset):
         gold = super().__getitem__(index)
         if self.alt_dict is not None and self.rng.random() < self.alt_p:
             # lookup dial/turn key for this index
+            # print('index', index)
+            # try:
             key = self.idxs[index]
+            # print('key', key)
+            # except:
+            #     pdb.set_trace()
             if key not in self.alt_dict:
                 return gold
             else:
@@ -167,7 +174,6 @@ class VP(data.Dataset):
         label_filename = os.path.join(root, label_filename) if label_filename is not None else 'data/labels.txt'
         with open(label_filename) as f:
             lines = f.readlines()
-            # pdb.set_trace()
             for line in lines:
                 label, text = line.split("\t")
                 if bound_field is not None:
@@ -184,7 +190,7 @@ class VP(data.Dataset):
             traindev_idxs = []
         if foldid==None:
             if num_experts > 0:
-                assert num_experts <= 5
+                # assert num_experts <= 5
                 dev_length = math.floor(len(examples) * dev_ratio)
                 if test_filename is not None:
                     test = test_examples
@@ -199,11 +205,14 @@ class VP(data.Dataset):
                 # print(dev_length)
                 for i in range(num_experts):
                     devs.append(cls(text_field, label_field, bound_field=bound_field, examples=traindev[dev_length*i:dev_length*(i+1)]))
-                    trains.append(cls(text_field, label_field, bound_field=bound_field, 
+                    tests = cls(text_field, label_field, bound_field=bound_field, examples=test_examples)
+                    for j in range(1):
+                        trains.append(cls(text_field, label_field, bound_field=bound_field,
                                       examples=traindev[:dev_length*i]+traindev[dev_length*(i+1):]+label_examples,
-                                      idxs=traindev_idxs[:dev_length*i]+traindev_idxs[dev_length*(i+1):]+label_idxs, 
+                                      idxs=traindev_idxs[:dev_length*i]+traindev_idxs[dev_length*(i+1):]+label_idxs,
                                       alt_dict=alt_dict, prob_dict=prob_dict, alt_p=alt_p, random_state=42))
-                return (trains, devs, cls(text_field, label_field, bound_field=bound_field, examples=test))
+                # return (trains, devs, cls(text_field, label_field, bound_field=bound_field, examples=test))
+                return (trains, devs, tests)
 
             else:
                 dev_index = -1 * int(dev_ratio*len(examples))
@@ -245,14 +254,15 @@ class VP(data.Dataset):
             test = folds[foldid]
             # print(len(traindev[:dev_index]), 'num_experts', num_experts)
             if num_experts > 0:
-                assert num_experts <= 5
+                # assert num_experts <= 5
                 trains = []
                 devs = []
                 dev_length = math.floor(len(traindev) * dev_ratio)
                 # print(dev_length)
                 for i in range(num_experts):
                     devs.append(cls(text_field, label_field, bound_field=bound_field, examples=traindev[dev_length*i:dev_length*(i+1)]))
-                    trains.append(cls(text_field, label_field, bound_field=bound_field, 
+                    for j in range(1):
+                        trains.append(cls(text_field, label_field, bound_field=bound_field,
                                       examples=traindev[:dev_length*i]+traindev[dev_length*(i+1):]+label_examples,
                                       idxs=traindev_idxs[:dev_length*i]+traindev_idxs[dev_length*(i+1):]+label_idxs, 
                                       alt_dict=alt_dict, prob_dict=prob_dict, alt_p=alt_p, random_state=42))

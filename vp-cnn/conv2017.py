@@ -6,6 +6,24 @@ class Convert:
     def __init__(self):
         pass
 
+    def rebuild_dialogs(self, corrected):
+        dialog = -1
+        turn = 0
+        num_src = []
+        for sent in [x.split('\t')[0] for x in corrected]:
+            turn += 1
+            if sent.startswith("#START"):
+                dialog += 1
+                turn = 0
+                num_src.append("FORGET")
+            else:
+                num_src.append("({}, {})".format(str(dialog), str(turn)))
+            # TODO this was from the old dict system
+            # if sent not in num_src:
+            #     num_src[sent] = []
+            # num_src[sent].append([dialog - 1, turn - 1])
+        return num_src
+
     def load_labels(self, labels_file):
         label_dict = {}
         for line in labels_file:
@@ -18,16 +36,20 @@ class Convert:
 
     def main(self, labels, dialogs):
         outlines = []
-        for line in dialogs:
+        dialogs = dialogs.readlines()
+        num_dias = self.rebuild_dialogs(dialogs)
+        assert(len(dialogs) == len(num_dias))
+        for line, nums in zip(dialogs, num_dias):
             if not line.startswith('#S'):
                 line = line.strip().split('\t')
                 turn = line[0].lower()
                 turn = turn.translate(str.maketrans('', '', string.punctuation))
                 label = line[1]
                 if label in labels:
-                    outlines.append('\t'.join([labels[label], turn]) + '\n')
-                else:
-                    outlines.append('\t'.join(['999', turn]) + '\n')
+                    outlines.append((nums + '\n', '\t'.join([labels[label], turn]) + '\n'))
+                # TODO ADD LATER ONCE BASIC EVAL IS FINISHED
+                # else:
+                #     outlines.append('\t'.join(['999', turn]) + '\n')
         return outlines
 
 
@@ -38,5 +60,9 @@ if __name__ == '__main__':
     labels = c.load_labels(labels)
     outlines = c.main(labels, dialogs)
     outfile = open(sys.argv[3], 'w')
-    for line in outlines:
+    outidxes = open(sys.argv[4], 'w')
+    for tuples in outlines:
+        line = tuples[1]
+        num = tuples[0]
         outfile.write(line)
+        outidxes.write(num)
