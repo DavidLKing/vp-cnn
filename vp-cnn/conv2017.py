@@ -8,16 +8,16 @@ class Convert:
 
     def rebuild_dialogs(self, corrected):
         dialog = -1
-        turn = 0
+        turn = -1 
         num_src = []
         for sent in [x.split('\t')[0] for x in corrected]:
-            turn += 1
             if sent.startswith("#START"):
                 dialog += 1
                 turn = 0
                 num_src.append("FORGET")
             else:
                 num_src.append("({}, {})".format(str(dialog), str(turn)))
+                turn += 1
             # TODO this was from the old dict system
             # if sent not in num_src:
             #     num_src[sent] = []
@@ -38,6 +38,7 @@ class Convert:
         originals = []
         outlines = []
         dialogs = dialogs.readlines()
+        dialogs = [x for x in dialogs if x.split('\t')[3] != 'unknown']
         num_dias = self.rebuild_dialogs(dialogs)
         assert(len(dialogs) == len(num_dias))
         for line, nums in zip(dialogs, num_dias):
