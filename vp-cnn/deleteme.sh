@@ -12,16 +12,14 @@ python main.py -emb-path ../w2v/ \
 	-num-experts=2 \
 	-char-test-file=test.tsv \
 	-word-test-file=test.tsv \
-	# -test-idx-file=test.labels \
-	# -full-test-dialogues=vp17-cs.full.csv \
 	-xfolds=0 \
-	-epochs=1 \
 	-word-batch-size=50 \
 	-char-batch-size=200 \
-	-char-kernel-num=100 \
-	-word-kernel-num=200 \
-	-char-embed-dim=100 -char-embed-dim=50 -word-kernel-sizes=1,2,3,4,5 \
-	-char-kernel-sizes=1,2,3,4,5,6,7,8,9 -char-test-file=vp17.base.word.nonew.txt \
-	-word-test-file=vp17.base.word.nonew.txt \
+	-word-kernel-num=600 \
+	-char-kernel-num=200 \
+  -word-kernel-sizes=1,2,3,4,5 \
+	-char-kernel-sizes=1,2,3,4,5,6,7,8,9 \
 	-log-file=deleteme.log \
 	-prediction-file-handle=deleteme.predictions.txt
+	# -test-idx-file=test.labels \
+	# -full-test-dialogues=vp17-cs.full.csv \
